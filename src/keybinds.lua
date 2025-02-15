@@ -1,19 +1,27 @@
 function love.keypressed(key, scancode, isRepeat)
     -- directions
     if scancode == 'right' then
-        Cursor.x = Cursor.x + 1
+        if InBounds(Cursor.x + 1, 1) then
+            Cursor.x = Cursor.x + 1
+        end
     end
 
     if scancode == 'down' then
-        Cursor.y = Cursor.y + 1
+        if InBounds(1, Cursor.y + 1) then
+            Cursor.y = Cursor.y + 1
+        end
     end
 
     if scancode == 'left' then
-        Cursor.x = Cursor.x - 1
+        if InBounds(Cursor.x - 1, 1) then
+            Cursor.x = Cursor.x - 1
+        end
     end
 
     if scancode == 'up' then
-        Cursor.y = Cursor.y - 1
+        if InBounds(1, Cursor.y - 1) then
+            Cursor.y = Cursor.y - 1
+        end
     end
 
     Camera.offx = -Cursor.x*Camera.cellSize*Camera.zoom + love.graphics.getWidth()/2 - Camera.cellSize*Camera.zoom/2
@@ -26,7 +34,7 @@ function love.keypressed(key, scancode, isRepeat)
     end
 
     if scancode == 's' then
-        DeleteObject(Cursor.x, Cursor.y)
+        DeleteCell(Cursor.x, Cursor.y)
     end
 
     -- cycling place types

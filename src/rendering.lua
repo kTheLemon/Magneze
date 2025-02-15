@@ -5,13 +5,15 @@ Camera = {
     cellSize = 11
 }
 
-function Object:Render()
-    love.graphics.draw(Tex[self.type], self.x*Camera.zoom*Camera.cellSize + Camera.offx, self.y*Camera.zoom*Camera.cellSize + Camera.offy, 0, Camera.zoom, Camera.zoom)
+function RenderCell(type, x, y)
+    love.graphics.draw(Tex[type], x*Camera.zoom*Camera.cellSize + Camera.offx, y*Camera.zoom*Camera.cellSize + Camera.offy, 0, Camera.zoom, Camera.zoom)
 end
 
 function RenderWorld()
-    for i = 1, #World do
-        World[i]:Render()
+    for x = 1, #World do
+        for y = 1, #World[1] do
+            RenderCell(World[x][y], x, y)
+        end
     end
 end
 
@@ -23,16 +25,7 @@ function RenderCursor()
     love.graphics.draw(Tex[PlaceTypes[Cursor.type]], Cursor.x*Camera.zoom*Camera.cellSize + Camera.offx + Camera.cellSize*Camera.zoom - 15, Cursor.y*Camera.zoom*Camera.cellSize + Camera.offy + Camera.cellSize*Camera.zoom - 15, 0, Camera.zoom/2, Camera.zoom/2)
 end
 
-function RenderBg()
-    for x = -20, 120 do
-        for y = -20, 120 do
-            love.graphics.draw(Tex['bg'], x*Camera.zoom*Camera.cellSize + Camera.offx, y*Camera.zoom*Camera.cellSize + Camera.offy, 0, Camera.zoom, Camera.zoom)
-        end
-    end
-end
-
 function love.draw()
-    RenderBg()
     RenderWorld()
     RenderCursor()
 end

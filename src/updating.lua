@@ -1,92 +1,82 @@
-Updates = {
-    'minus_normal',
-    'plus_normal'
+local updateTimer = 0
+UpdateDelay = 0.15
+
+local invalidAttractors = {
+    ['bg'] = true,
+    ['wall'] = true
 }
 
-function NextPos(x, y, dir, amnt)
-    if dir == 0 then
-        return x+amnt, y
-    end
+local updaters = {
+    ['plus_normal'] = true,
+    ['minus_normal'] = true
+}
 
-    if dir == 1 then
-        return x, y+amnt
-    end
+function SplitCell(x, y, dirs, amnt)
+    local cType = GetCell(x, y)
+    local should_delete = false
 
-    if dir == 2 then
-        return x-amnt, y
-    end
+    for i = 1, #dirs do
+        local d = dirs[i]
+        print(d)
+        local nx, ny = NextPos(x, y, d, amnt)
 
-    if dir == 3 then
-        return x, y-amnt
-    end
-end
-
-function IsPositionEmpty(x, y)
-    for i = 1, #World do
-        if (World[i].x == x) and (World[i].y == y) then return false end
-    end
-    return true
-end
-
-function Object:Move(dir, amnt)
-    local nx, ny = NextPos(self.x, self.y, dir, amnt)
-
-    if IsPositionEmpty(nx, ny) then
-        self.x, self.y = nx, ny
-    end
-end
-
-function Object:getAttractionObjectDir(x, y, amnt)
-    local xdist, ydist = x - self.x, y - self.y
-
-    if ((math.abs(xdist) == amnt) and (ydist == 0)) then
-        if (xdist > 0) then return 0 end
-        if (xdist < 0) then return 2 end
-    end
-
-    if ((math.abs(ydist) == amnt) and (xdist == 0)) then
-        if (ydist > 0) then return 1 end
-        if (ydist < 0) then return 3 end
-    end
-
-    return false
-end
-
-function Object:update(idx)
-    for i = 1, #World do
-        local curObj = World[i]
-
-        if (i ~= idx) then
-            if curObj.type ~= 'wall' then
-                if (curObj.type:sub(1, 1) == self.type:sub(1, 1)) then
-                    local objectDir = self:getAttractionObjectDir(curObj.x, curObj.y, 1)
-                    if objectDir then
-                        if self:Move((objectDir+2)%4, 1) then break end
-                    end
-                else
-                    local objectDir = self:getAttractionObjectDir(curObj.x, curObj.y, 2)
-                    if objectDir then
-                        if self:Move(objectDir, 1) then break end
-                    end
-                end
+        local c, nc = GetCell(nx, ny), GetCell(nx, ny, NextWorld)
+        
+        if c == 'bg' then
+            if nc == 'bg' then
+                SetCell(nx, ny, cType, NextWorld)
+                should_delete = true
             end
+
+            if nc:sub(1, 1) == cType:sub(1, 1) then
+                should_delete = true
+            end
+
+            should_delete = true
         end
     end
+
+    if should_delete then
+        DeleteCell(x, y, NextWorld)
+    end
+end
+
+function UpdateCell(x, y)
+    local cType = World[x][y]
+    local split_dirs = {}
+
+    for d = 0, 3 do
+        local nx, ny = NextPos(x, y, d, 1)
+        local n2x, n2y = NextPos(x, y, d, 2)
+        
+        local nc, n2c = GetCell(nx, ny), GetCell(n2x, n2y)
+
+        if (nc:sub(1, 1) == cType:sub(1, 1)) then
+            split_dirs[#split_dirs+1] = (d + 2)%4
+        end
+
+        if (n2c:sub(1, 1) ~= cType:sub(1, 1)) and (not invalidAttractors[n2c]) then
+            split_dirs[#split_dirs+1] = d
+        end
+    end
+
+    SplitCell(x, y, split_dirs, 1)
 end
 
 function UpdateWorld()
-    for i = 1, #Updates do
-        for j = 1, #World do
-            if (World[j].type == Updates[i]) then
-                print("UPDATE INCOMING!")
-                World[j]:update(j)
+    NextWorld = CopyValue(World)
+
+    for x = 1, #World do
+        for y = 1, #World[1] do
+            if updaters[GetCell(x, y)] then
+                UpdateCell(x, y)
             end
         end
     end
+
+    World = CopyValue(NextWorld)
 end
 
-UpdateDelay = 0.15
-local updateTimer = 0
 function love.update(dt)
     updateTimer = updateTimer + dt
 
