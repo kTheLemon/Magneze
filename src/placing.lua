@@ -1,8 +1,9 @@
 PlaceTypes = {
     'minus_normal',
     'plus_normal',
+    'wall',
     'minus_wall',
-    'plus_wall'
+    'plus_wall',
 }
 
 Cursor = {
