@@ -1,8 +1,10 @@
 PlaceTypes = {
     'minus_normal',
+    'neutral_normal',
     'plus_normal',
     'wall',
     'minus_wall',
+    'neutral_wall',
     'plus_wall',
 }
 

@@ -8,6 +8,7 @@ local invalidAttractors = {
 
 local updaters = {
     ['plus_normal'] = true,
+    ['neutral_normal'] = true,
     ['minus_normal'] = true
 }
 
@@ -26,13 +27,12 @@ function SplitCell(x, y, dirs, amnt)
             if nc == 'bg' then
                 SetCell(nx, ny, cType, NextWorld)
                 should_delete = true
-            end
-
-            if nc:sub(1, 1) == cType:sub(1, 1) then
+            elseif nc:sub(1, 1) == cType:sub(1, 1) then
+                should_delete = true
+            elseif nc:sub(1, 1) ~= cType:sub(1, 1) then
+                DeleteCell(nx, ny, NextWorld)
                 should_delete = true
             end
-
-            should_delete = true
         end
     end
 
